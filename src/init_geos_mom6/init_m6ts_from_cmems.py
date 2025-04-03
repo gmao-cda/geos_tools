@@ -205,6 +205,8 @@ def parse_args():
     lat1d_f, t_f, s_f = flood_globe(lat1d, t, s, npes=args.npes)
     write_netcdf(args.fnout, lon1d, lat1d_f, z1d, t_f, s_f, odate)
 
+
 if __name__ == '__main__':
-    args = parse_args()
+    print(" ".join(sys.argv[:]))
+    parse_args()
 

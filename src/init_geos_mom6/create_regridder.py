@@ -1,4 +1,6 @@
-import sys, os
+#!/usr/bin/env python3
+
+import sys, os, argparse
 import numpy as np
 import xesmf as xe
 import xarray as xr
@@ -74,12 +76,29 @@ def load_regridder(fnin):
     return regridder
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description=("Generate regridder used by xesmf"))
+    parser.add_argument("fnout", default="xemsf_wts_ufs0d25_LL0d25.nc", type=str, help=("name of output files"))
+    parser.add_argument("--fngrd", default="ufs.cpld.cpl.r.2024-01-01-10800.nc", type=str, required=True, help=("Files storing ocean grid variables "))
+    parser.add_argument("--latname", default="ocnExp_lat" ,type=str, required=True, help=("variable name of lat"))
+    parser.add_argument("--lonname", default="ocnExp_lon" ,type=str, required=True, help=("variable name of lon"))
+    parser.add_argument("--res", default=0.25, type=float, required=True, help=("resolution of the remapped latlon grids"))
+
+    args = parser.parse_args()
+    args.fngrd = os.path.abspath(args.fngrd)
+    args.fnout = os.path.abspath(args.fnout)
+    print(args)
+
+    create_regridder( fnin = args.fngrd, 
+                      lat_name = args.latname,
+                      lon_name = args.lonname,
+                      res = args.res,
+                      fnout = args.fnout )
+    regridder = load_regridder(args.fnout)
+
+
 if __name__ == '__main__':
-    create_regridder( fnin = "ufs.cpld.cpl.r.2024-01-01-10800.nc",
-                      lat_name = "ocnExp_lat",
-                      lon_name = "ocnExp_lon", 
-                      res  = 0.25, 
-                      fnout = "xemsf_wts_ufs0d25_LL0d25.nc" )
-    regridder = load_regridder("xemsf_wts_ufs0d25_LL0d25.nc")
+    print(" ".join(sys.argv[:]))
+    parse_args()
     
  

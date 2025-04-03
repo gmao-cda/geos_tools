@@ -161,15 +161,27 @@ def write_netcdf(fnout, lon1d, lat1d, z1d, t, s, odate):
     v_t[:]      = t.astype(np.float32)
     f.close()
 
-if __name__ == '__main__':
-    fnRgrdr = "xemsf_wts_ufs0d25_LL0d25.nc"
-    fnDiag  = "ocn_2016_01_02_00.nc"
-    fnout   = "ts_ufs.nc"
+def parse_args():
+    parser = argparse.ArgumentParser(description=("create T/S on uniform latlon grid with input of UFS replay ocean history files"))
+    parser.add_argument("fnout", default="IC_TS_ufs.nc", type=str, help=("output T/S file to initialize MOM6"))
+    parser.add_argument("--fnDiag",default="ocn_2016_01_02_00.nc", required=True, type=str,help=("UFS ocean diag files"))
+    parser.add_argument("--fnRgrdr",default="xemsf_wts_ufs0d25_LL0d25.nc",required=True, type=str,help=("weights file used by regridder"))
+    parser.add_argument("--npes", default=8, type=int, required=False, help=("num of procceses for parallel-processing"))
 
-    regridder, grd_in, grd_out = load_regridder(fnRgrdr)
-    z1d, t3dTri, s3dTri, odate = load_ufsocn_diag(fnDiag)
+    args = parser.parse_args()
+    args.fnDiag  = os.path.abspath(args.fnDiag)
+    args.fnRgrdr = os.path.abspath(args.fnRgrdr)
+    args.fnout   = os.path.abspath(args.fnout)
+    print(args)
+
+    regridder, grd_in, grd_out = load_regridder(args.fnRgrdr)
+    z1d, t3dTri, s3dTri, odate = load_ufsocn_diag(args.fnDiag)
     t3d_f, s3d_f = interp_flood_globle(regridder, t3dTri, s3dTri, npes = 8)
-    write_netcdf(fnout, grd_out['lon'], grd_out['lat'], z1d, t3d_f, s3d_f, odate)
+    write_netcdf(args.fnout, grd_out['lon'], grd_out['lat'], z1d, t3d_f, s3d_f, odate)
+
+if __name__ == '__main__':
+    print(" ".join(sys.argv[:]))
+    parse_args()
 
 
 
